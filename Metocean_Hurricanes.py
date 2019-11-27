@@ -133,12 +133,12 @@ class StatRecord(object):
 
 		self.numStorms += v
 
-class PlatformStats(PlatformRecord):
-
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-		self.stats = {}
+# class PlatformStats(PlatformRecord):
+#
+# 	def __init__(self, *args, **kwargs):
+# 		super().__init__(*args, **kwargs)
+#
+# 		self.stats = {}
 
 
 def readStormDateTime(instr):
@@ -294,7 +294,7 @@ def runStatsForStorms(platforms, ncDir, start_date, stop_date):
 		c_msw = ds.variables['wind_wmo']
 		
 		# note number of storms in netCDF
-		dsLen = ds.dimensions['storm'].size
+		dsLen = len(ds.dimensions['storm'])
 		# keeping track of platform records
 		n = 1
 		# loop over each platform record
@@ -328,7 +328,7 @@ if __name__ == "__main__":
 	
 	nc_dir = r'P:\01_DataOriginals\GOM\Metocean\StormData\1972_2017'
 	platform_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Platforms\PlatformIDs_forPatrick_ML.csv"
-	output_path = r'P:/01_DataOriginals/GOM/Metocean/StormData/hurricane_output_delete_later.csv'
+	output_path = r'P:/01_DataOriginals/GOM/Metocean/StormData/hurricane_output_AllPlatforms.csv'
 	
 	prsr = ArgumentParser(description="Generate Stats per platform")
 	prsr.add_argument('platform_csv', type=str,

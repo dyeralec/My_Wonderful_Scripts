@@ -211,7 +211,8 @@ def checkHurricaneEffect(platform, storm_lon, storm_lat, wind_speed, lon_min, la
 		distance_squared = (((platform.x - storm_x)**2) + ((platform.y - storm_y)**2))
 		if distance_squared <= ((radius)**2):
 			# print('HIT!')
-			return category
+			# update platform record with stat
+			platform.addValue(category)
 		
 def sph2xy(lon, lon_origin, lat, lat_origin):
 	R = 6371 * 1e3
@@ -242,20 +243,21 @@ def processStats(platform, numStorms, lat, lon, time, msw, lon_min, lat_min):
 			except TypeError:
 				# occurs when the time variable is missing
 				continue
+			# if there is no platform install date, skip it because we cannot accurately know how long
+			# the platform has been in service
+			if platform.install_date is None:
+				continue
 				
-			# if timeObs is not None:
+			if (platform.remove_date is None) and (timeObs >= platform.install_date):
+				# check whether or not the platform is affected by the storm and by what category
+				checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], msw_storm[t], lon_min, lat_min)
+				continue
 				
-				# calculate time between current and next observation
-				# delta = timeObs - timeObs_next
-				# delta_days = delta.total_seconds() / timedelta(days=1).total_seconds()
-				
-				# check if the time is between the platform install and removal date
+			# check if the time is between the platform install and removal date or no removal date
 			if (timeObs >= platform.install_date) and (timeObs <= platform.remove_date):
 			
 				# check whether or not the platform is affected by the storm and by what category
-				hurricane_cat = checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], msw_storm[t], lon_min, lat_min)
-				# update platform record with stat
-				platform.addValue(hurricane_cat)
+				checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], msw_storm[t], lon_min, lat_min)
 			
 def GetNC_Min(ncDir, var_name):
 	ncFiles = iglob(ncDir)

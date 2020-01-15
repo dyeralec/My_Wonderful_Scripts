@@ -56,14 +56,14 @@ with Dataset(nc_path,'r') as ds:
 			lat_storm = lat[i:i + 1].tolist()[0]
 			wind_storm = wind[i:i + 1].tolist()[0]
 			
-			m = Basemap(llcrnrlon=-100.,llcrnrlat=10.,urcrnrlon=-40.,urcrnrlat=50.,\
-            	projection='lcc',lat_1=20.,lat_2=40.,lon_0=-80.,\
+			m = Basemap(llcrnrlon=-100.,llcrnrlat=20.,urcrnrlon=-80.,urcrnrlat=33.,\
+            	projection='lcc',lat_0=30.,lon_0=-90.,\
             	resolution ='l',area_thresh=1000.)
 			# draw coastlines and meridians
 			m.drawcoastlines()
-			m.drawlsmask(land_color='#cc9966', ocean_color='#99ffff', lakes=True)
-			m.drawparallels(np.arange(10, 70, 20), labels=[1, 1, 0, 0])
-			m.drawmeridians(np.arange(-100, 0, 20), labels=[0, 0, 0, 1])
+			m.drawlsmask(land_color='#827d7c', ocean_color='#8dcef9', lakes=True)
+			m.drawparallels(np.arange(10, 70, 5), labels=[1, 1, 0, 0])
+			m.drawmeridians(np.arange(-100, 0, 5), labels=[0, 0, 0, 1])
 			
 			# get rid of None values
 			lon_storm = [i for i in lon_storm if i]
@@ -92,5 +92,5 @@ with Dataset(nc_path,'r') as ds:
 			plt.scatter(storm.trop_x, storm.trop_y, c='C', edgecolors='black', label='Tropical')
 			plt.scatter(storm.c_123_x, storm.c_123_y, c='darkorange', edgecolors='black', label='Cat 1-3')
 			plt.scatter(storm.c_45_x, storm.c_45_y, c='maroon', edgecolors='black', label='Cat 4-5')
-			plt.legend(loc='upper right')
+			plt.legend(loc='upper center')
 			plt.show()

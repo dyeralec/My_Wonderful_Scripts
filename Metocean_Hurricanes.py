@@ -328,9 +328,9 @@ def writeResultsToCSV(platforms, outpath):
 
 if __name__ == "__main__":
 	
-	nc_dir = r'P:\01_DataOriginals\GOM\Metocean\StormData\1972_2017'
+	nc_dir = r'P:\01_DataOriginals\GOM\Metocean\StormData\1942_2017'
 	platform_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Platforms\PlatformIDs_forPatrick_ML.csv"
-	output_path = r'P:/01_DataOriginals/GOM/Metocean/StormData/hurricane_output_AllPlatforms.csv'
+	output_path = r'P:/01_DataOriginals/GOM/Metocean/StormData/hurricane_output_AllPlatforms_redo.csv'
 	
 	prsr = ArgumentParser(description="Generate Stats per platform")
 	prsr.add_argument('platform_csv', type=str,

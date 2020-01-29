@@ -1453,3 +1453,64 @@ def CheckFeatureExistsInGDB(GDB, featureName):
 		feat = False
 	
 	return feat
+
+
+def CSV_to_list(csv_path):
+	list = []
+	with open(csv_path, 'r') as Record:
+		reader = csv.reader(Record)
+		for line in reader:
+			list.append(line)
+	
+	return (list)
+
+
+def CalculateAgeInYears(install_str, removal_str, format):
+	"""
+	Function to calculate the number of years between two dates.
+	Will return a year float to 2 decimal places.
+
+	Args:
+		install_str: string indicating install date
+		removal_str: string indicating removal date
+		format: date string format according to datetime module
+
+	Returns: float indicating years
+
+	"""
+	
+	install = datetime.strptime(install_str, format)
+	removal = datetime.strptime(removal_str, format)
+	
+	diff = removal - install
+	
+	years = round((diff.days + diff.seconds / 86400) / 365.2425, 1)
+	
+	return years
+
+
+def ReturnAgeCategory(age):
+	"""
+		This function is specific, as in it will return a string of the
+	year range that an age falls between. These current year ranges
+	were picked for the offshore infrastructure project to help
+	predict the possible range of age at removal for platforms
+	using machine learning. This should be adjusted as necessary.
+
+	Args:
+		age: float or integer indicating age
+
+	Returns: string indicating age range category
+
+	"""
+	
+	if (age >= 0) and (age < 11):
+		return '0-11'
+	if (age >= 11) and (age <= 20):
+		return '11-20'
+	if (age >= 20) and (age < 30):
+		return '20-30'
+	if (age >= 0) and (age < 11):
+		return '30-42'
+	if (age >= 42):
+		return '42-72'

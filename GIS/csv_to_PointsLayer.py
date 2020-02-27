@@ -5,23 +5,24 @@ import arcpy
 import os
 
 # set environment variables
-arcpy.env.workspace = r'P:\02_DataWorking\GOM\Infrastructure\Rigs\RigMovements\Shapefiles_Rasters\RigPoints_YearMonth'
+arcpy.env.workspace = r'P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Wells\BoreholeRawData'
 # NOTE: for this code there are sub-folders within this dataFolder that will be iterated through
-dataFolder = r'P:\02_DataWorking\GOM\Infrastructure\Rigs\RigMovements\Month_Year_Tables'
-outputFolder = r'P:\02_DataWorking\GOM\Infrastructure\Rigs/RigMovements\Shapefiles_Rasters\RigPoints_YearMonth'
+dataFolder = r'P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Wells\BoreholeRawData'
+outputFolder = dataFolder
 # set spatial coordinate system
-spRef = arcpy.SpatialReference(4326)
+spRef = arcpy.SpatialReference(4267)
 # set latitude variable name
-lat = 'RigLa_55'
-long = 'RigLo_56'
+lat = 'SURF_LATITUDE'
+long = 'SURF_LONGITUDE'
 
 # loop through the subfolders within the dataFolder. Code found from https://stackoverflow.com/questions/19587118/iterating-through-directories-with-python
 for subdir, dirs, files in os.walk(dataFolder):
     for file in files:
+        # create variable of full path location
+        file_location = os.path.join(subdir, file)
+        
         # try to use the file, but if it is not a csv print the except block
         try:
-            # create variable of full path location
-            file_location = os.path.join(subdir,file)
             # set the input table to use
             in_Table = file_location
             # set x and y coordinates from lat and long above

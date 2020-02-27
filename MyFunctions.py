@@ -1510,7 +1510,7 @@ def ReturnAgeCategory(age):
 		return '11-20'
 	if (age >= 20) and (age < 30):
 		return '20-30'
-	if (age >= 0) and (age < 11):
+	if (age >= 30) and (age < 42):
 		return '30-42'
 	if (age >= 42):
 		return '42-72'

@@ -11,9 +11,9 @@ Contact info: alec.dyer@netl.doe.gov, (541) 918-4475
 
 import csv
 
-main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Platforms\Apply VariableBased Ranks\Version2_03262019\Current_activePlatforms_wInc_wRankValues_wAgeAtRemoval.csv"
+main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Incident_Platform_Matching\Matching Ver 3\Matched_Platforms_wSeverity_wAge_Ver3_reformatted.csv"
 appending_csv = r"P:\01_DataOriginals\GOM\Metocean\Stats_For_NLP\plat_currents_stats.csv"
-output_csv = r"E:\GradientBoostingClassifier\Current_activePlatforms_wMetOcean.csv"
+output_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Incident_Platform_Matching\Matching Ver 3\Matched_Platforms_wSeverity_wAge_Ver3_reformatted_wCurrents.csv"
 
 main_ID_index = 13
 appending_ID_index = 0

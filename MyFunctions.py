@@ -650,6 +650,59 @@ def SortLayer_GDB(inGDB, layerName, field):
 	del inLayer
 	del inDataSource
 	del inDriver
+	
+def GetFeatureFromShapefile(filePath, fid):
+	"""
+	Use function to grab a certain feature from a shapefile
+	based on the FID
+	Args:
+		file_path: path to shapefile (string)
+		fid: fid number (integer)
+
+	Returns: ogr data source and ogr feature object
+	"""
+	
+	# open the inShapefile as the driver type
+	inDriver = ogr.GetDriverByName('ESRI Shapefile')
+	inDataSource = inDriver.Open(filePath, 0)
+	inLayer = inDataSource.GetLayer()
+	
+	fid = int(fid)
+	
+	# grab feature from layer based on fid
+	feat = inLayer.GetFeature(fid)
+	
+	return inDataSource, feat
+
+def GetFieldFromShapefile(filePath, fid, fieldName):
+	"""
+	Function to grab the value of a field from a specific
+	features in a shapefile by fid
+	
+	Args:
+		filePath: path to shapefile (string)
+		fid: fid feature number (integer)
+		fieldName: name of field (string)
+
+	Returns: specified field value (string, integer, or float)
+
+	"""
+	
+	# open the inShapefile as the driver type
+	inDriver = ogr.GetDriverByName('ESRI Shapefile')
+	inDataSource = inDriver.Open(filePath, 0)
+	inLayer = inDataSource.GetLayer()
+	
+	# if fid is "X", skip
+	if fid.lower() == 'x':
+		return None
+	
+	# grab feature from layer based on fid
+	feat = inLayer.GetFeature(int(fid))
+	# grab value of field
+	val = feat.GetField(fieldName)
+	
+	return val
 
 def Sort(inDataSource, inMemory, field):
 	"""
@@ -1070,7 +1123,7 @@ def ListOGR_drivers():
 	formatsList.sort()  # Sorting the messy list of ogr drivers
 	
 	for i in formatsList:
-		print i
+		print(i)
 
 def TableToCSV(inGDB, inTableName, outTablePath):
 	from osgeo import ogr
@@ -1454,8 +1507,9 @@ def CheckFeatureExistsInGDB(GDB, featureName):
 	
 	return feat
 
-
 def CSV_to_list(csv_path):
+	import csv
+	
 	list = []
 	with open(csv_path, 'r') as Record:
 		reader = csv.reader(Record)
@@ -1478,6 +1532,7 @@ def CalculateAgeInYears(install_str, removal_str, format):
 	Returns: float indicating years
 
 	"""
+	from datetime import datetime
 	
 	install = datetime.strptime(install_str, format)
 	removal = datetime.strptime(removal_str, format)
@@ -1514,3 +1569,62 @@ def ReturnAgeCategory(age):
 		return '30-42'
 	if (age >= 42):
 		return '42-72'
+	
+def OpenShapefile_ReadOnly(path):
+	"""
+	Open shapefile for reading only
+	
+	Args:
+		path: path to shapefile
+
+	Returns: ogr data source, ogr layer
+
+	"""
+	
+	d = ogr.GetDriverByName('ESRI Shapefile')
+	ds = d.Open(path,0)
+	l = ds.GetLayer()
+	
+	return ds, l
+
+
+def OpenShapefile_ForEditing(path):
+	"""
+	Open shapefile for reading only
+
+	Args:
+		path: path to shapefile
+
+	Returns: ogr data source, ogr layer
+
+	"""
+	
+	d = ogr.GetDriverByName('ESRI Shapefile')
+	ds = d.Open(path, 1)
+	l = ds.GetLayer()
+	
+	return ds, l
+	
+def cloneFieldDefn(src_def):
+	fdef = ogr.FieldDefn(src_def.GetName(), src_def.GetType())
+	fdef.SetWidth(src_def.GetWidth())
+	fdef.SetPrecision(src_def.GetPrecision())
+	return fdef
+	
+def AlterFieldName(shapefilePath, oldFieldName, newFieldName):
+	
+	ds, l = OpenShapefile_ForEditing(shapefilePath)
+	
+	# get layer defn
+	layerDefn = l.GetLayerDefn()
+	
+	# get field defn
+	i = layerDefn.GetFieldIndex(oldFieldName)
+	fieldDefn = layerDefn.GetFieldDefn(i)
+	# clone field
+	clone = cloneFieldDefn(fieldDefn)
+	# rename field
+	clone.SetName(newFieldName)
+	# set new field to layer
+	l.AlterFieldDefn(i, clone, ogr.ALTER_NAME_FLAG)
+	

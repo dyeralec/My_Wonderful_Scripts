@@ -334,7 +334,7 @@ if __name__ == "__main__":
 	
 	prsr = ArgumentParser(description="Generate Stats per platform")
 	prsr.add_argument('platform_csv', type=str,
-					  help='csv with platform data, and mapped to spatial with "classify_nodes_HYCOM.py"')
+					  help='csv with platform data')
 	prsr.add_argument('nc_dir', type=str, help='path to directory containing netcdf data')
 	prsr.add_argument('outputs', type=str, help='path to output data')
 	prsr.add_argument('--start_date', type=readPlatDateTime, default=FIRST_DATE, help='Start of querying period')

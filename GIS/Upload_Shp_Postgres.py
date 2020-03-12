@@ -27,7 +27,7 @@ def upload_file(filename, directory):
     #
     # except:
     try:
-        os.system('ogr2ogr -f "PostgreSQL" PG:"host=10.50.45.73 user=postgres dbname=BOEM_IAA password=postgres" "{}" -nlt {}'.format(path, geom_name))
+        os.system('ogr2ogr -f "PostgreSQL" PG:"host=10.50.45.73 user=postgres dbname=BOEM_IAA password=postgres" "{}" -nlt {} -lco overwrite=YES'.format(path, geom_name))
         print('Upload for {} complete.'.format(filename))
         
     except:

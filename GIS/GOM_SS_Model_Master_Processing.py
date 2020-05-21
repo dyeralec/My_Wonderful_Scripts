@@ -176,13 +176,13 @@ if __name__ == "__main__":
 			inputShps = ShapefileLayers(ADpolyShp, SPpolyShp, MMMpolyShp, PAMpolyShp, AJBpolyShp)
 			outputShp = polyShpMaster
 			# create new shapefile
-			CreateShapefile(outputShp, ogr.wkbPolygon)
+			CreateShapefile(outputShp, ogr.wkbMultiPolygon)
 		if type == 'lines':
 			inputCsv = lineCsv
 			inputShps = ShapefileLayers(ADlineShp, SPlineShp, MMMlineShp, PAMlineShp, AJBlineShp)
 			outputShp = lineShpMaster
 			# create new shapefile
-			CreateShapefile(outputShp, ogr.wkbLineString)
+			CreateShapefile(outputShp, ogr.wkbMultiLineString)
 			
 		# create list of records from
 		recordsList = CSV_to_list(inputCsv)

@@ -11,13 +11,13 @@ Contact info: alec.dyer@netl.doe.gov, (541) 918-4475
 
 import csv
 
-main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Incident_Platform_Matching\Matching Ver 3\Matched_Platforms_wSeverity_wAge_Ver3_reformatted.csv"
-appending_csv = r"P:\01_DataOriginals\GOM\Metocean\Stats_For_NLP\plat_currents_stats.csv"
-output_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Incident_Platform_Matching\Matching Ver 3\Matched_Platforms_wSeverity_wAge_Ver3_reformatted_wCurrents.csv"
+main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Platforms\Platforms_BSEE_Dec19\Platforms_BSEE_Dec19_wStructureID.csv"
+appending_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Platform_Emissions\2017_Gulfwide_Platforms_NoDuplicatePlatforms.csv"
+output_csv = r"E:\Platform_Emissions_Matching.csv"
 
-main_ID_index = 13
-appending_ID_index = 0
-main_first_column_name = 'FID'
+main_ID_index = 3
+appending_ID_index = 1
+main_first_column_name = 'DISTRICT CODE'
 
 # first open the appending CSV and put into a list
 with open(appending_csv, 'r') as appending_file:
@@ -33,7 +33,7 @@ r = 0
 # keep track of which Platform IDs are already completed
 completed = []
 # now open the output csv
-with open(output_csv,'wb') as output_file:
+with open(output_csv,'w', newline='') as output_file:
 	writer = csv.writer(output_file)
 	
 	# open main csv to loop through
@@ -41,6 +41,10 @@ with open(output_csv,'wb') as output_file:
 		reader = csv.reader(main_file)
 		
 		for line in reader:
+			
+			newLine = line
+			
+			r += 1
 			
 			# grab platform ID from main file line
 			main_ID = line[main_ID_index]
@@ -51,8 +55,8 @@ with open(output_csv,'wb') as output_file:
 				# check if this is the header and add appending header to line header
 				if line[0] == main_first_column_name:
 					for rec in record:
-						line.append(rec)
-					writer.writerow(line)
+						newLine.append(rec)
+					writer.writerow(newLine)
 					break
 				
 				appending_ID = record[appending_ID_index]
@@ -64,10 +68,10 @@ with open(output_csv,'wb') as output_file:
 					
 					# if a match, append record to main line and write to output
 					for rec in record:
-						line.append(rec)
-			
-			if line[0] != main_first_column_name:
-				r += 1
-				writer.writerow(line)
+						newLine.append(rec)
+						
+					writer.writerow(newLine)
+					
+					break
 			
 print(format(m) + ' matches found out of ' + format(r) + ' total records.')

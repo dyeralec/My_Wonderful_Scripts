@@ -5,15 +5,15 @@ import arcpy
 import os
 
 # set environment variables
-arcpy.env.workspace = r'P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Wells\BoreholeRawData'
+arcpy.env.workspace = r"P:\01_DataOriginals\GOM\Infrastructure\Emissions\2017_Gulfwide_Platform_Inventory_20190705_CAP_GHG\Shapefiles.csv"
 # NOTE: for this code there are sub-folders within this dataFolder that will be iterated through
-dataFolder = r'P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Wells\BoreholeRawData'
-outputFolder = dataFolder
+dataFolder = r'"P:\01_DataOriginals\GOM\Infrastructure\Emissions\2017_Gulfwide_Platform_Inventory_20190705_CAP_GHG\2017_Gulfwide_Platform_20190705_CAP_GHG.csv"'
+outputFolder = r"P:\01_DataOriginals\GOM\Infrastructure\Emissions\2017_Gulfwide_Platform_Inventory_20190705_CAP_GHG\Shapefiles"
 # set spatial coordinate system
 spRef = arcpy.SpatialReference(4267)
 # set latitude variable name
-lat = 'SURF_LATITUDE'
-long = 'SURF_LONGITUDE'
+lat = 'Y_COORDINATE'
+long = 'X_COORDINATE'
 
 # loop through the subfolders within the dataFolder. Code found from https://stackoverflow.com/questions/19587118/iterating-through-directories-with-python
 for subdir, dirs, files in os.walk(dataFolder):

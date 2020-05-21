@@ -4,13 +4,16 @@
 #import ogr2ogr
 import os
 from osgeo import ogr
+import sys
+
+ogr.UseExceptions()
 
 # using ogr2ogr in python this function will upload a shp file to the postgres database
-def upload_file(filename, directory):
+def upload_file(filename, directory, driver):
     
     path = os.path.join(directory,filename)
     
-    geom = GetGeomType_OGR(directory, filename, 'ESRI Shapefile')
+    geom = GetGeomType_OGR(directory, filename, driver)
     
     if geom == 1:
         geom_name = 'POINT'
@@ -54,7 +57,7 @@ def GetGeomType_OGR(folder, inFileName, driverType):
 
 	"""
     # open layer
-    if driverType == 'FileGDB':
+    if driverType == 'OpenFileGDB':
         driver = ogr.GetDriverByName(driverType)
         dataSource = driver.Open(folder, 0)
         layer = dataSource.GetLayer(inFileName)
@@ -85,4 +88,31 @@ for file in os.listdir(main_dir):
         
         # this is the path to the shp file and then executing the function to load the data to postgres
         # this can be converted to loop through shape files through a folder.
-        upload_file(file, main_dir)
+        upload_file(file, main_dir, "ESRI Shapefile")
+        
+    if file.endswith('.gdb'):
+    
+        # get the driver
+        driver = ogr.GetDriverByName("OpenFileGDB")
+    
+        # opening the FileGDB
+        try:
+            gdb = driver.Open(file, 0)
+        except Exception as e:
+            print(e)
+            sys.exit()
+    
+        # list to store layers'names
+        featsClassList = []
+    
+        # parsing layers by index
+        for featsClass_idx in range(gdb.GetLayerCount()):
+            featsClass = gdb.GetLayerByIndex(featsClass_idx)
+            featsClassList.append(featsClass.GetName())
+    
+        # upload each feature to the postgres database
+        for featsClass in featsClassList:
+            upload_file(featsClass, file, "OpenFileGDB")
+    
+        # clean close
+        del gdb

@@ -11,13 +11,14 @@ Contact info: alec.dyer@netl.doe.gov, (541) 918-4475
 
 import csv
 
-main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Platforms\Platforms_BSEE_Dec19\Platforms_BSEE_Dec19_wStructureID.csv"
-appending_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\01_DataOriginals\Platform_Emissions\2017_Gulfwide_Platforms_NoDuplicatePlatforms.csv"
-output_csv = r"E:\Platform_Emissions_Matching.csv"
+main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Machine Learning\1.DATA\Training_IDs.csv"
+appending_csv = r"C:\Users\dyera\Documents\Offshore Task 3\GradientBoostingRegressor\RISK PREDICTION\Bins\Removed_Platforms_OCS_Inc_Risk_Quartiles_5Bins.csv"
+output_csv = r"C:\Users\dyera\Documents\Offshore Task 3\GradientBoostingRegressor\RISK PREDICTION\Bins\Removed_Platforms_OCS_Inc_Risk_Quartiles_5Bins_TrainingSet.csv"
 
-main_ID_index = 3
-appending_ID_index = 1
-main_first_column_name = 'DISTRICT CODE'
+main_ID_index = 0
+other_ID_index = None
+appending_ID_index = 0
+main_first_column_name = 'ID'
 
 # first open the appending CSV and put into a list
 with open(appending_csv, 'r') as appending_file:
@@ -44,10 +45,8 @@ with open(output_csv,'w', newline='') as output_file:
 			
 			newLine = line
 			
-			r += 1
-			
 			# grab platform ID from main file line
-			main_ID = line[main_ID_index]
+			main_ID = line[main_ID_index] # + line[other_ID_index]
 			
 			# now loop through appending records and look for matches
 			for record in Appending_Records:
@@ -58,6 +57,8 @@ with open(output_csv,'w', newline='') as output_file:
 						newLine.append(rec)
 					writer.writerow(newLine)
 					break
+
+				r += 1
 				
 				appending_ID = record[appending_ID_index]
 				
@@ -69,9 +70,7 @@ with open(output_csv,'w', newline='') as output_file:
 					# if a match, append record to main line and write to output
 					for rec in record:
 						newLine.append(rec)
-						
-					writer.writerow(newLine)
-					
-					break
+
+			writer.writerow(newLine)
 			
 print(format(m) + ' matches found out of ' + format(r) + ' total records.')

@@ -5,16 +5,16 @@ import arcpy
 import os
 
 # set environment variables
-mainFolder = r"R:\GEOWorkspace\C_Projects\BOEM IAA\Data Processing\BSEE Incidents"
+mainFolder = r"C:\Users\dyera\Documents\Task 6\Metocean\snap grid"
 arcpy.env.workspace = mainFolder
 # NOTE: for this code there are sub-folders within this dataFolder that will be iterated through
-CsvName = r"Matched_Incidents_Reformatted_Redacted.csv"
+CsvName = r"grid_coords.csv"
 outputFolder = mainFolder
 # set spatial coordinate system
-spRef = arcpy.SpatialReference(4267)
+spRef = arcpy.SpatialReference(4326)
 # set latitude variable name
-lat = 'P_LATITUDE'
-long = 'P_LONGITUDE'
+lat = 'lon'
+long = 'lat'
 
 # try to use the file, but if it is not a csv print the except block
 

@@ -46,7 +46,7 @@ D_FORMAT = '%m/%d/%Y'
 DT_FORMAT = '%m/%d/%Y %H:%M:%S'
 
 FIRST_DATE = datetime(1972,1,1)
-LAST_DATE = datetime(2018,12,31)
+LAST_DATE = datetime(2021,1,27)
 
 FLD_NAME = 'Storms'
 
@@ -143,8 +143,14 @@ class PlatformRecord(object):
 		self.gustMax = 0
 		self.gustMin = 0
 		self.yearCount = 0
-		
-	def addValue(self, cat, wave, wind, gust):
+		self.MCPCount = 0
+		self.MCPNoneCount = 0
+		self.MCPSum = 0
+		self.MCPAverage = 0
+		self.MCPMax = 0
+		self.MCPMin = 0
+
+	def addValue(self, cat, wave, wind, gust, mcp):
 		
 		self.stormTotal += 1
 		
@@ -179,6 +185,17 @@ class PlatformRecord(object):
 			if gust < self.gustMin:
 				self.gustMin = gust
 		if gust is None:
+			self.gustNoneCount += 1
+
+		if mcp is not None:
+			self.MCPCount += 1
+			self.MCPSum += mcp
+			self.MCPAverage = (self.MCPSum / self.MCPCount)
+			if mcp > self.MCPMax:
+				self.MCPMax = mcp
+			if mcp < self.MCPMin:
+				self.MCPMin = mcp
+		if mcp is None:
 			self.gustNoneCount += 1
 		
 		if cat is None:
@@ -399,7 +416,7 @@ def findNCDTInd(target, nc):
 	else:
 		return ds,ind
 
-def checkHurricaneEffect(platform, storm_lon, storm_lat, cat, wind_speed, wave, gust, lon_min, lat_min):
+def checkHurricaneEffect(platform, storm_lon, storm_lat, cat, wind_speed, wave, gust, lon_min, lat_min, mcp):
 	
 	# Saffir-Simpson Scale Hurricane Category
 	#Category  mph		m/s		kts
@@ -472,7 +489,7 @@ def checkHurricaneEffect(platform, storm_lon, storm_lat, cat, wind_speed, wave, 
 		if distance_squared <= ((radius) ** 2):
 			# print('HIT!')
 			# update platform record with stat
-			platform.addValue(category, wave, wind_speed, gust)
+			platform.addValue(category, wave, wind_speed, gust, mcp)
 			
 			return(category)
 		else:
@@ -487,7 +504,7 @@ def sph2xy(lon, lon_origin, lat, lat_origin):
 	return x,y
 
 
-def processStats(platform, numStorms, lat, lon, time, categ, msw, wave, gust, lon_min, lat_min):
+def processStats(platform, numStorms, lat, lon, time, categ, msw, wave, gust, lon_min, lat_min, mcp):
 	# loop through each storm
 	error_count = 0
 	# set year to none for later
@@ -507,6 +524,7 @@ def processStats(platform, numStorms, lat, lon, time, categ, msw, wave, gust, lo
 			msw_storm = msw[i:i + 1].tolist()[0]
 			wave_storm = wave[i:i + 1].tolist()[0]
 			gust_storm = gust[i:i + 1].tolist()[0]
+			mcp_storm = mcp[i:i + 1].tolist()[0]
 		except:
 			error_count += 1
 			print("Read failed, storm # " + format(i))
@@ -544,7 +562,7 @@ def processStats(platform, numStorms, lat, lon, time, categ, msw, wave, gust, lo
 			
 			if (platform.remove_date is None) and (timeObs >= platform.install_date):
 				# check whether or not the platform is affected by the storm and by what category
-				categ_hit = checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], cat_storm[t], msw_storm[t], wave_storm[t], gust_storm[t], lon_min, lat_min)
+				categ_hit = checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], cat_storm[t], msw_storm[t], wave_storm[t], gust_storm[t], lon_min, lat_min, mcp_storm[t])
 				# if the platform was "hit" by the hurricane, update the yearly stats
 				if categ_hit is not None:
 					YearStats.AddHit(categ_hit)
@@ -554,7 +572,7 @@ def processStats(platform, numStorms, lat, lon, time, categ, msw, wave, gust, lo
 			# check if the time is between the platform install and removal date or no removal date
 			if (timeObs >= platform.install_date) and (timeObs <= platform.remove_date):
 				# check whether or not the platform is affected by the storm and by what category
-				categ_hit = checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], cat_storm[t], msw_storm[t], wave_storm[t], gust_storm[t], lon_min, lat_min)
+				categ_hit = checkHurricaneEffect(platform, lon_storm[t], lat_storm[t], cat_storm[t], msw_storm[t], wave_storm[t], gust_storm[t], lon_min, lat_min, mcp_storm[t])
 				# if the platform was "hit" by the hurricane, update the yearly stats
 				if categ_hit is not None:
 					YearStats.AddHit(categ_hit)
@@ -599,6 +617,7 @@ def runStatsForStorms(platforms, ncDir, start_date, stop_date):
 		c_msw = ds.variables['usa_wind']
 		c_wave = ds.variables['usa_seahgt']
 		c_gust = ds.variables['usa_gust']
+		c_mcp = ds.variables['usa_pres']
 		
 		# note number of storms in netCDF
 		dsLen = len(ds.dimensions['storm'])
@@ -612,7 +631,7 @@ def runStatsForStorms(platforms, ncDir, start_date, stop_date):
 			# print('Platform Record: ' + format(n))
 			# calculate the x and y coordinates for the platform
 			p.x, p.y = sph2xy(p.lon, lon_min, p.lat, lat_min)
-			processStats(p, dsLen, c_lat, c_lon, c_time, c_cat, c_msw, c_wave, c_gust, lon_min, lat_min)
+			processStats(p, dsLen, c_lat, c_lon, c_time, c_cat, c_msw, c_wave, c_gust, lon_min, lat_min, c_mcp)
 			n += 1
 			
 		end = time.time()
@@ -659,9 +678,9 @@ def writeResultsToCSV(platforms, outpath):
 
 if __name__ == "__main__":
 	
-	nc_dir = r'P:\01_DataOriginals\GOM\Metocean\StormData\1842-2019'
-	platform_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Metocean\Hurricane Processing\Platform_AddOns.csv"
-	output_path = r'P:\01_DataOriginals\GOM\Metocean\StormData\hurricane_output_NewPlatforms_Ver3.csv'
+	nc_dir = r'P:\01_DataOriginals\GOM\Metocean\StormData\1842-2021'
+	platform_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Metocean\Hurricane Processing\all_platforms_ver5_A.csv"
+	output_path = r'P:\01_DataOriginals\GOM\Metocean\StormData\hurricane_output_AllPlatforms_Ver5_A.csv'
 	
 	prsr = ArgumentParser(description="Generate Stats per platform")
 	prsr.add_argument('platform_csv', type=str,

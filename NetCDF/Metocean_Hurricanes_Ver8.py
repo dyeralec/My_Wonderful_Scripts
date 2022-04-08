@@ -49,8 +49,8 @@ D_FORMAT = '%m/%d/%Y'
 DT_FORMAT = '%m/%d/%Y %H:%M:%S'
 DT_ISO_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-FIRST_DATE = datetime(1972,1,1)
-LAST_DATE = datetime(2021,1,27)
+FIRST_DATE = datetime(1942,1,1)
+LAST_DATE = datetime(2021,9,2)
 
 FLD_NAME = 'Storms'
 
@@ -58,9 +58,9 @@ FLD_NAME = 'Storms'
 
 class PlatformRecord(object):
 
-    def __init__(self, PlatformID, Lat, Lon, InstallDate, RemovalDate=None, IncidentDates=''):
+    def __init__(self, Master_ID, Lat, Lon, InstallDate, RemovalDate=None, IncidentDates=''):
 
-        self.id = PlatformID
+        self.id = Master_ID
         self.lat = float(Lat)
         self.lon = float(Lon)
         self.install_str = InstallDate
@@ -925,12 +925,13 @@ def wind_radii_nederhoff(vmax=None, lat=None, region=None, probability=None, *ar
     # region 6: Atlantic Ocean              (AL > 0)
     # region 7: all data points
 
-    # convert wind speed from knots to m/s
     if not isinstance(vmax, list):
         vmax = [vmax]
 
+    # change from 10 min average to a 1 min average (in paper. Section 2.4: Data Conversion)
     vmax = np.divide(vmax, 0.93)
 
+    # convert wind speed from knots to m/s
     vmax = np.multiply(vmax, 0.514)
 
     ## Radius of maximum winds (RMW or Rmax) in km
@@ -939,20 +940,16 @@ def wind_radii_nederhoff(vmax=None, lat=None, region=None, probability=None, *ar
     # wind_radii_nederhoff.m:43
     # 2. Coefficients for B
     coefficients_b = [[132.4119062, 14.56403797, - 0.002597033, 20.38080365], [229.2458441, 9.538650691, 0.003988105, 28.44573672],
-         [85.25766551, 30.69208726, 0.00243248, 5.781165406], [127.8333007, 11.84747574, 0.015936312, 25.46820005],
-         [153.7332947, 11.47888854, 0.007471193, 28.94897887], [261.5288742, 7.011517854, 0.026191256, 29.20227871],
-         [19.08992428, 24.08855731, 0.10624034, 23.18020146], [44.82417433, 23.37171288, 0.030469057, 22.42820361]]
+                      [85.25766551, 30.69208726, 0.00243248, 5.781165406], [127.8333007, 11.84747574, 0.015936312, 25.46820005],
+                      [153.7332947, 11.47888854, 0.007471193, 28.94897887], [261.5288742, 7.011517854, 0.026191256, 29.20227871],
+                      [19.08992428, 24.08855731, 0.10624034, 23.18020146], [44.82417433, 23.37171288, 0.030469057, 22.42820361]]
 
     # wind_radii_nederhoff.m:53
     # 3. Get the best guess for a and b given wind speed and latitude
     a_value = np.dot(np.ones((1, len(vmax))), coefficients_a[region]).reshape(-1)
     # wind_radii_nederhoff.m:63
-    # b_1 = np.dot(coefficients_b[0][region], np.exp(- vmax / coefficients_b[1][region]))
-    # b_2 = np.multiply(b_1, (1 + np.dot(coefficients_b[2][region], abs(lat))))
-    # b_3 = coefficients_b[3][region]
-    # b_value = b_2 + b_3
     b_value = np.add(np.multiply(np.dot(coefficients_b[region][0], np.exp(-1*np.divide(vmax, coefficients_b[region][1]))),
-                          (np.add(1, np.dot(coefficients_b[region][2], np.absolute(lat))))), coefficients_b[region][3])
+                                 (np.add(1, np.dot(coefficients_b[region][2], np.absolute(lat))))), coefficients_b[region][3])
     # wind_radii_nederhoff.m:64
 
     rmax={}
@@ -1068,7 +1065,7 @@ def CreatePointsObject_Memory(platforms, outSRS):
     ds = driver.CreateDataSource('Platforms')
     # create srs in NAD 1927
     inSRS = osr.SpatialReference()
-    inSRS.ImportFromEPSG(4267)
+    inSRS.ImportFromEPSG(4326) # WGS 1984
 
     # create the CoordinateTransformation
     coordTrans = osr.CoordinateTransformation(inSRS, outSRS)
@@ -1170,6 +1167,9 @@ def runStatsForStorms(platforms, storm_netcdf, start_date, stop_date):
     driver = ogr.GetDriverByName('Memory')
     storm_ds = driver.CreateDataSource('StormBuffer')
     storm_lyr = storm_ds.CreateLayer('StormBuffer', outSpatialRef, ogr.wkbPolygon)
+    fld = ogr.FieldDefn("sid", ogr.OFTString)
+    fld.SetWidth(12)
+    storm_lyr.CreateField(fld)
     fld = ogr.FieldDefn("radius", ogr.OFTReal)
     storm_lyr.CreateField(fld)
     fld = ogr.FieldDefn("category", ogr.OFTString)
@@ -1200,6 +1200,7 @@ def runStatsForStorms(platforms, storm_netcdf, start_date, stop_date):
     c_subbasin = ds.variables['subbasin']
     # c_sid = ds.variables['sid']
     # c_rmw = ds.variables['usa_rmw']
+    c_sid = ds.variables['sid']
 
     # note number of storms in netCDF
     num_storms = len(ds.dimensions['storm'])
@@ -1230,6 +1231,7 @@ def runStatsForStorms(platforms, storm_netcdf, start_date, stop_date):
             # sid_storm = c_sid[i:i + 1].tolist()[0]
             iso_time_storm = c_time_iso[i:i + 1].tolist()[0]
             # rmw_storm = c_rmw[i:i + 1].tolist()[0]
+            sid_storm = c_sid[i:i + 1].tolist()[0]
         except:
             error_count += 1
             print("Read failed, storm # " + format(i))
@@ -1254,6 +1256,9 @@ def runStatsForStorms(platforms, storm_netcdf, start_date, stop_date):
 
             # check if subbasin is GM (Gulf of Mexico)
             if subbasin == 'GM':
+
+                # get storm sid
+                sid = b"".join(sid_storm).decode("utf-8")
 
                 # keep track of the year for processing stats per year
                 if year is None:
@@ -1280,7 +1285,7 @@ def runStatsForStorms(platforms, storm_netcdf, start_date, stop_date):
 
                 # get hurricane radius
                 rmw = wind_radii_nederhoff(vmax=msw_storm[t], lat=lat_storm[t], region=6, probability=1)
-                radius = rmw['median'][0] * 1000
+                radius = rmw['mode'][0] * 1000
                 if (radius is None) or (radius == 0):
                     print('radius is not valid: {}, {}'.format(radius, type(radius)))
                     sys.exit(1)
@@ -1332,7 +1337,7 @@ def writeResultsToCSV(platforms, outpath):
 
         wtr = csv.writer(outfile)
         # write header
-        hdr = ['PlatformID', 'Total Storms', 'Cat None Count', 'Tropical Sum','Tropical Min Yearly','Tropical Max Yearly','Tropical Mean Yearly',
+        hdr = ['Master_ID', 'Total Storms', 'Cat None Count', 'Tropical Sum','Tropical Min Yearly','Tropical Max Yearly','Tropical Mean Yearly',
                'Tropical Days Sum','Tropical Days Min Yearly','Tropical Days Max Yearly', 'Tropical Days Mean Yearly',
                'C1 Sum','C1 Min Yearly','C1 Max Yearly','C1 Mean Yearly','C1 Days Sum','C1 Days Min Yearly','C1 Days Max Yearly','C1 Days Mean Yearly',
                'C2 Sum','C2 Min Yearly','C2 Max Yearly','C2 Mean Yearly','C2 Days Sum','C2 Days Min Yearly','C2 Days Max Yearly','C2 Days Mean Yearly',
@@ -1396,11 +1401,11 @@ def writeResultsToCSV(platforms, outpath):
 if __name__ == "__main__":
 
     ##### SET THESE PATHS ####
-    main dir =
+    main_dir = r'P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Metocean\Hurricane Processing'
     os.chdir(main_dir)
-    storm_netcdf = r'IBTrACS.NA.v04r00.nc'
-    platform_csv = r"Platforms_08122021.csv"
-    output_path = r"HurricaneProcessing_Ver8_AllPlatforms.csv"
+    storm_netcdf = r"P:\01_DataOriginals\GOM\Metocean\StormData\1842-Dec2021\IBTrACS.NA.v04r00.nc"
+    platform_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Metocean\Metocean Processing\Platform Records for Processing\Platforms_ForMetocean.csv"
+    output_path = r"C:\Users\dyera\Downloads\HurricaneProcessing_Ver8_RadiiMode_AllPlatforms.csv"
     ##########################
 
     prsr = ArgumentParser(description="Generate Stats per platform")
@@ -1419,6 +1424,6 @@ if __name__ == "__main__":
     # load the platforms csv
     platforms = loadPlatformCsv(args.platform_csv)
 
-    runStatsForStorms(platforms, os.path.join(args.nc_dir, '*.nc'), args.start_date, args.stop_date)
+    runStatsForStorms(platforms, storm_netcdf, args.start_date, args.stop_date)
 
     writeResultsToCSV(platforms, output_path)

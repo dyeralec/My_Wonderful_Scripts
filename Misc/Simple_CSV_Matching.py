@@ -25,16 +25,16 @@ import os
 
 ##### INPUTS #####
 
-main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Full Dataset\platforms_03092022_wMetocean_wProduction.csv"
-main_ID_index = 0
+main_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Pipelines\Pipeline Incidents\Combine Incident Types\Sparse_fields_to_check.csv"
+main_ID_index = 1
 
 appending_info = [
-	[r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Metocean\Corrosion Ambients\BioGeoChemical\BioGeoChemical.csv", 0],
+	[r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Pipelines\Pipeline Incidents\Combine Incident Types\Pipeline_Incidents_Metadata_Notes.csv", 0],
 	]
 
 no_data_value = ''
 
-output_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\03_Analysis\Full Dataset\platforms_03092022_wMetocean_wProduction_wBioGeoChem.csv"
+output_csv = r"P:\05_AnalysisProjects_Working\Offshore Infrastructure and Incidents REORG\02_DataWorking\Pipelines\Pipeline Incidents\Combine Incident Types\Sparse_fields_to_check_wMetadata.csv"
 
 ##########
 
